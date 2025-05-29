@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Anonymizer - Secure Your Data</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .connection-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-connected {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-disconnected {
+            background: #dc3545;
+            color: white;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .config-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .config-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .config-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-item label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .config-item select, .config-item input {
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .config-item select:focus, .config-item input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .input-section, .output-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 25px;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            margin-right: 12px;
+            border-radius: 2px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .input-textarea {
+            background: #ffffff;
+        }
+
+        .output-textarea {
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .stats-panel {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3498db;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .entities-list {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .entity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .entity-type {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .entity-text {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .entity-confidence {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #cce7ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+
+        .audit-log {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e9ecef;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            border-left: 3px solid #3498db;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .connection-status {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-top: 10px;
+                display: inline-block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="connection-status" id="connectionStatus">
+                🔴 Disconnected
+            </div>
+            <h1>🔒 Prompt Anonymizer</h1>
+            <p>Secure your sensitive data before sending prompts to AI models</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Backend Configuration -->
+            <div class="config-panel">
+                <h3 class="config-title">🔗 Backend Configuration</h3>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label for="backendUrl">Backend URL:</label>
+                        <input type="text" id="backendUrl" value="http://localhost:5000" placeholder="http://localhost:5000">
+                    </div>
+                    <div class="config-item">
+                        <label for="testConnection">Connection Test:</label>
+                        <button class="btn btn-secondary" onclick="testConnection()">
+                            🔍 Test Connection
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anonymization Settings -->
+            <div class="config-panel">
+                <h3 class="config-title">⚙️ Anonymization Settings</h3>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label for="personMethod">Person Names:</label>
+                        <select id="personMethod">
+                            <option value="SYNTHETIC">Synthetic Names</option>
+                            <option value="REPLACE">Generic Placeholder</option>
+                            <option value="MASK">Mask with *</option>
+                            <option value="HASH">Hash Value</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label for="emailMethod">Email Addresses:</label>
+                        <select id="emailMethod">
+                            <option value="SYNTHETIC">Synthetic Email</option>
+                            <option value="REPLACE">Generic Placeholder</option>
+                            <option value="MASK">Mask with *</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label for="phoneMethod">Phone Numbers:</label>
+                        <select id="phoneMethod">
+                            <option value="MASK">Mask Preserving Format</option>
+                            <option value="SYNTHETIC">Synthetic Number</option>
+                            <option value="REPLACE">Generic Placeholder</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label for="confidenceThreshold">Confidence Threshold:</label>
+                        <select id="confidenceThreshold">
+                            <option value="0.5">Low (50%)</option>
+                            <option value="0.6" selected>Medium (60%)</option>
+                            <option value="0.7">High (70%)</option>
+                            <option value="0.8">Very High (80%)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Section -->
+            <div class="input-section">
+                <h3 class="section-title">📝 Original Prompt</h3>
+                <textarea 
+                    id="inputPrompt" 
+                    class="input-textarea"
+                    placeholder="Paste your prompt here... 
+
+Example:
+Hi, I'm John Smith from Acme Corp. My email is john.smith@acme.com and phone is (555) 123-4567. Please help me with my account."
+                ></textarea>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="anonymizePrompt()" id="anonymizeBtn">
+                        🔒 Anonymize Prompt
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearAll()">
+                        🗑️ Clear All
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadExample()">
+                        📋 Load Example
+                    </button>
+                </div>
+
+                <div class="alert alert-info" id="processingAlert">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Processing your prompt with backend...
+                    </div>
+                </div>
+
+                <div class="alert alert-error" id="errorAlert"></div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="output-section">
+                <h3 class="section-title">🛡️ Anonymized Prompt</h3>
+                <textarea 
+                    id="outputPrompt" 
+                    class="output-textarea"
+                    readonly
+                    placeholder="Anonymized prompt will appear here..."
+                ></textarea>
+                
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="copyToClipboard()" id="copyButton" disabled>
+                        📋 Copy Anonymized Text
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadResult()" id="downloadButton" disabled>
+                        💾 Download Results
+                    </button>
+                    <button class="btn btn-secondary" onclick="showAuditLog()" id="auditButton" disabled>
+                        📊 View Audit Log
+                    </button>
+                </div>
+
+                <div class="alert alert-success" id="copyAlert">
+                    ✅ Anonymized text copied to clipboard!
+                </div>
+            </div>
+
+            <!-- Statistics Panel -->
+            <div class="stats-panel">
+                <h3 class="section-title">📊 Analysis Results</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="entitiesCount">0</span>
+                        <span class="stat-label">Entities Detected</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="textReduction">0%</span>
+                        <span class="stat-label">Text Change</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="processingTime">0ms</span>
+                        <span class="stat-label">Processing Time</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="securityLevel">🔒</span>
+                        <span class="stat-label">Security Level</span>
+                    </div>
+                </div>
+
+                <div class="entities-list" id="entitiesList">
+                    <h4>Detected Entities:</h4>
+                    <div id="entitiesContainer">
+                        <p style="color: #6c757d; font-style: italic;">No entities detected yet. Process a prompt to see results.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Log Section -->
+            <div class="stats-panel" style="display: none;" id="auditSection">
+                <h3 class="section-title">📋 Audit Log</h3>
+                <div class="audit-log" id="auditLog">
+                    <p style="color: #6c757d; font-style: italic;">No audit entries yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentResult = null;
+        let backendConnected = false;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            testConnection();
+            loadExample();
+        });
+
+        // Test backend connection
+        async function testConnection() {
+            const backendUrl = document.getElementById('backendUrl').value;
+            const statusElement = document.getElementById('connectionStatus');
+            
+            try {
+                const response = await fetch(`${backendUrl}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    statusElement.textContent = '🟢 Connected';
+                    statusElement.className = 'connection-status status-connected';
+                    backendConnected = true;
+                } else {
+                    throw new Error('Backend not responding');
+                }
+            } catch (error) {
+                statusElement.textContent = '🔴 Disconnected';
+                statusElement.className = 'connection-status status-disconnected';
+                backendConnected = false;
+                console.error('Backend connection failed:', error);
+            }
+        }
+
+        // Anonymize prompt using backend
+        async function anonymizePrompt() {
+            const inputText = document.getElementById('inputPrompt').value.trim();
+            
+            if (!inputText) {
+                showAlert('errorAlert', 'Please enter a prompt to anonymize.');
+                return;
+            }
+
+            if (!backendConnected) {
+                showAlert('errorAlert', 'Backend is not connected. Please check the backend URL and try again.');
+                return;
+            }
+
+            // Show loading
+            showLoading(true);
+            
+            // Prepare request data
+            const requestData = {
+                prompt: inputText,
+                config: {
+                    rules: buildAnonymizationRules(),
+                    confidence_threshold: parseFloat(document.getElementById('confidenceThreshold').value)
+                }
+            };
+
+            try {
+                const backendUrl = document.getElementById('backendUrl').value;
+                const startTime = Date.now();
+                
+                const response = await fetch(`${backendUrl}/anonymize`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const processingTime = Date.now() - startTime;
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Backend error occurred');
+                }
+
+                const result = await response.json();
+                currentResult = result;
+
+                // Update UI with results
+                updateResults(result, processingTime);
+                
+            } catch (error) {
+                console.error('Anonymization failed:', error);
+                showAlert('errorAlert', `Error: ${error.message}`);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Build anonymization rules from UI
+        function buildAnonymizationRules() {
+            return {
+                PERSON: {
+                    entity_type: 'PERSON',
+                    method: document.getElementById('personMethod').value,
+                    placeholder: null,
+                    preserve_format: false
+                },
+                EMAIL: {
+                    entity_type: 'EMAIL',
+                    method: document.getElementById('emailMethod').value,
+                    placeholder: null,
+                    preserve_format: false
+                },
+                PHONE: {
+                    entity_type: 'PHONE',
+                    method: document.getElementById('phoneMethod').value,
+                    placeholder: null,
+                    preserve_format: true
+                }
+            };
+        }
+
+        // Update UI with anonymization results
+        function updateResults(result, processingTime) {
+            // Update output textarea
+            document.getElementById('outputPrompt').value = result.anonymized_prompt;
+            
+            // Update statistics
+            document.getElementById('entitiesCount').textContent = result.entities_detected.length;
+            document.getElementById('processingTime').textContent = `${processingTime}ms`;
+            
+            // Calculate text change percentage
+            const originalLength = result.original_prompt.length;
+            const anonymizedLength = result.anonymized_prompt.length;
+            const changePercent = Math.round(((anonymizedLength - originalLength) / originalLength) * 100);
+            document.getElementById('textReduction').textContent = `${changePercent > 0 ? '+' : ''}${changePercent}%`;
+            
+            // Update security level
+            const securityLevel = calculateSecurityLevel(result.entities_detected.length);
+            document.getElementById('securityLevel').textContent = securityLevel;
+            
+            // Update entities list
+            updateEntitiesList(result.entities_detected);
+            
+            // Enable buttons
+            document.getElementById('copyButton').disabled = false;
+            document.getElementById('downloadButton').disabled = false;
+            document.getElementById('auditButton').disabled = false;
+        }
+
+        // Calculate security level based on entities detected
+        function calculateSecurityLevel(entitiesCount) {
+            if (entitiesCount === 0) return '🟢 Clean';
+            if (entitiesCount <= 2) return '🟡 Low Risk';
+            if (entitiesCount <= 5) return '🟠 Medium Risk';
+            return '🔴 High Risk';
+        }
+
+        // Update entities list display
+        function updateEntitiesList(entities) {
+            const container = document.getElementById('entitiesContainer');
+            
+            if (entities.length === 0) {
+                container.innerHTML = '<p style="color: #28a745; font-style: italic;">✅ No sensitive entities detected!</p>';
+                return;
+            }
+            
+            container.innerHTML = entities.map(entity => `
+                <div class="entity-item">
+                    <div>
+                        <span class="entity-type">${entity.type.toUpperCase()}</span>
+                        <span class="entity-text">${entity.text}</span>
+                    </div>
+                    <span class="entity-confidence">${(entity.confidence * 100).toFixed(1)}%</span>
+                </div>
+            `).join('');
+        }
+
+        // Show/hide loading indicator
+        function showLoading(show) {
+            const processingAlert = document.getElementById('processingAlert');
+            const loading = processingAlert.querySelector('.loading');
+            const anonymizeBtn = document.getElementById('anonymizeBtn');
+            
+            if (show) {
+                processingAlert.style.display = 'block';
+                loading.style.display = 'block';
+                anonymizeBtn.disabled = true;
+            } else {
+                processingAlert.style.display = 'none';
+                loading.style.display = 'none';
+                anonymizeBtn.disabled = false;
+            }
+        }
+
+        // Show alert messages
+        function showAlert(alertId, message) {
+            const alert = document.getElementById(alertId);
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Copy to clipboard
+        async function copyToClipboard() {
+            const outputText = document.getElementById('outputPrompt').value;
+            
+            try {
+                await navigator.clipboard.writeText(outputText);
+                showAlert('copyAlert', '✅ Anonymized text copied to clipboard!');
+            } catch (error) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = outputText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showAlert('copyAlert', '✅ Anonymized text copied to clipboard!');
+            }
+        }
+
+        // Download results as JSON
+        function downloadResult() {
+            if (!currentResult) return;
+            
+            const dataStr = JSON.stringify(currentResult, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `anonymization_result_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Show audit log
+        async function showAuditLog() {
+            const backendUrl = document.getElementById('backendUrl').value;
+            const auditSection = document.getElementById('auditSection');
+            const auditLog = document.getElementById('auditLog');
+            
+            try {
+                const response = await fetch(`${backendUrl}/audit`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const auditData = await response.json();
+                    
+                    if (auditData.length === 0) {
+                        auditLog.innerHTML = '<p style="color: #6c757d; font-style: italic;">No audit entries yet.</p>';
+                    } else {
+                        auditLog.innerHTML = auditData.map(entry => `
+                            <div class="log-entry">
+                                <strong>${entry.timestamp}</strong> | Session: ${entry.session_id.slice(0, 8)}... | 
+                                Entities: ${entry.entities_anonymized} (${entry.entity_types.join(', ')})
+                            </div>
+                        `).join('');
+                    }
+                    
+                    auditSection.style.display = 'block';
+                    auditSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                console.error('Failed to load audit log:', error);
+                showAlert('errorAlert', 'Failed to load audit log from backend.');
+            }
+        }
+
+        // Load example prompt
+        function loadExample() {
+            document.getElementById('inputPrompt').value = `Hi, I'm John Smith and I work at Acme Corporation. My email is john.smith@acme.com and my phone number is (555) 123-4567. My employee ID is EMP12345 and I live at 123 Main Street, Anytown, ST 12345. My SSN is 123-45-6789 and my credit card is 4532-1234-5678-9012. Please help me with my account registered on 03/15/2023.`;
+        }
+
+        // Clear all fields
+        function clearAll() {
+            document.getElementById('inputPrompt').value = '';
+            document.getElementById('outputPrompt').value = '';
+            document.getElementById('entitiesContainer').innerHTML = '<p style="color: #6c757d; font-style: italic;">No entities detected yet. Process a prompt to see results.</p>';
+            
+            // Reset statistics
+            document.getElementById('entitiesCount').textContent = '0';
+            document.getElementById('textReduction').textContent = '0%';
+            document.getElementById('processingTime').textContent = '0ms';
+            document.getElementById('securityLevel').textContent = '🔒';
+            
+            // Disable buttons
+            document.getElementById('copyButton').disabled = true;
+            document.getElementById('downloadButton').disabled = true;
+            document.getElementById('auditButton').disabled = true;
+            
+            // Hide audit section
+            document.getElementById('auditSection').style.display = 'none';
+            
+            currentResult = null;
+        }
+
+        // Auto-test connection every 30 seconds
+        setInterval(testConnection, 30000);
+    </script>
+</body>
+</html>
